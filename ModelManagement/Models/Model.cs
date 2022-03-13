@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace ModelManagement.Models
 {
-    public class Model
+    public class ModelBase
     {
         public long ModelId { get; set; }
         [MaxLength(64)]
@@ -16,7 +18,7 @@ namespace ModelManagement.Models
         [MaxLength(12)]
         public string? PhoneNo { get; set; }
         [MaxLength(64)]
-        public string? AddresLine1 { get; set; }
+        public string? AddressLine1 { get; set; }
         [MaxLength(64)]
         public string? AddresLine2 { get; set; }
         [MaxLength(9)]
@@ -31,7 +33,10 @@ namespace ModelManagement.Models
         public string? HairColor { get; set; }
         [MaxLength(1000)]
         public string? Comments { get; set; }
+    }
 
+    public class Model : ModelBase
+    {
         public List<Job>? Jobs { get; set; }
         public List<Expense>? Expenses { get; set; }
     }

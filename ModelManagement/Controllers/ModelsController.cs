@@ -3,152 +3,107 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.EntityFrameworkCore;
 using ModelManagement.Data;
 using ModelManagement.Models;
+using NuGet.Protocol;
 
 namespace ModelManagement.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
-    public class ModelsController : Controller
+    public class ModelsController : ControllerBase
     {
-        private readonly ModelDB _context;
+        private readonly ModelDb _context;
 
-        public ModelsController(ModelDB context)
+        public ModelsController(ModelDb context)
         {
             _context = context;
         }
 
-        // GET: Models
+        // GET: api/Models
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<ActionResult<IEnumerable<ModelBase>>> GetModels()
         {
-            return View(await _context.Models.ToListAsync());
+            var modelBaseList = await _context
+                .Models
+                .Cast<ModelBase>()
+                .ToListAsync();
+            return modelBaseList;
         }
 
-        // GET: Models/Details/5
+        // GET: api/Models/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Details(long? id)
+        public async Task<ActionResult<Model>> GetModel(long id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var model = await _context.Models.FindAsync(id);
 
-            var model = await _context.Models
-                .FirstOrDefaultAsync(m => m.ModelId == id);
             if (model == null)
             {
                 return NotFound();
             }
 
-            return View(model);
+            return model;
         }
-/*
-        // GET: Models/Create
-        public IActionResult Create()
+
+        // PUT: api/Models/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutModel(long id, Model model)
         {
-            return View();
-        }
-*/
-        // POST: Models/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        public async Task<IActionResult> Create([Bind("ModelId,FirstName,LastName,Email,PhoneNo,AddresLine1,AddresLine2,Zip,City,BirthDay,Height,ShoeSize,HairColor,Comments")] Model model)
-        {
-            if (ModelState.IsValid)
+            model.ModelId = id;
+               
+            _context.Entry(model).State = EntityState.Modified;
+
+            try
             {
-                _context.Add(model);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
             }
-            return View(model);
-        }
-/*
-        // GET: Models/Edit/5
-        public async Task<IActionResult> Edit(long? id)
-        {
-            if (id == null)
+            catch (DbUpdateConcurrencyException)
             {
-                return NotFound();
+                if (!ModelExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
             }
 
-            var model = await _context.Models.FindAsync(id);
-            if (model == null)
-            {
-                return NotFound();
-            }
-            return View(model);
+            return NoContent();
         }
 
-        // POST: Models/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: api/Models
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(long id, [Bind("ModelId,FirstName,LastName,Email,PhoneNo,AddresLine1,AddresLine2,Zip,City,BirthDay,Height,ShoeSize,HairColor,Comments")] Model model)
+        public async Task<ActionResult<Model>> PostModel([Bind("ModelId, FirstName, LastName, Email, PhoneNo, AddressLine1, AddressLine2, Zip, City, BirthDay, Height, ShoeSize, HairColor, Comments")] Model model)
         {
-            if (id != model.ModelId)
-            {
-                return NotFound();
-            }
+            _context.Models.Add(model);
+            await _context.SaveChangesAsync();
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(model);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ModelExists(model.ModelId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(model);
+            return CreatedAtAction("GetModel", new { id = model.ModelId }, model);
         }
 
-        // GET: Models/Delete/5
-        public async Task<IActionResult> Delete(long? id)
+        // DELETE: api/Models/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteModel(long id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var model = await _context.Models
-                .FirstOrDefaultAsync(m => m.ModelId == id);
+            var model = await _context.Models.FindAsync(id);
             if (model == null)
             {
                 return NotFound();
             }
 
-            return View(model);
-        }
-
-        // POST: Models/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(long id)
-        {
-            var model = await _context.Models.FindAsync(id);
             _context.Models.Remove(model);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return NoContent();
         }
-*/
+
         private bool ModelExists(long id)
         {
             return _context.Models.Any(e => e.ModelId == id);
