@@ -46,13 +46,10 @@ namespace ModelManagement.Controllers
         // PUT: api/Jobs/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutJob(long id, Job job)
+        public async Task<IActionResult> PutJob(long id, [Bind("StartDate", "Days", "Location", "Comments")] Job job)
         {
-            if (id != job.JobId)
-            {
-                return BadRequest();
-            }
-
+            job.JobId = id;
+            
             _context.Entry(job).State = EntityState.Modified;
 
             try
@@ -84,6 +81,34 @@ namespace ModelManagement.Controllers
 
             return CreatedAtAction("GetJob", new { id = job.JobId }, job);
         }
+
+        [HttpPost("AddModel")]
+        public async Task<ActionResult<Job>> AddModelToJob(long id, long modelId)
+        {
+            var currentJob = await _context.Jobs.FindAsync(id);
+            var ModelList = await _context.Models.ToListAsync();
+            var currentModel = ModelList.Find(x => x.ModelId == modelId);
+            
+            if (currentModel == null || currentJob == null)
+            {
+                return NotFound();
+            }
+
+            if (currentJob.Models == null)
+            {
+                currentJob.Models = new List<Model>();
+            }
+
+            currentJob.Models.Add(currentModel);
+
+            _context.Entry(currentJob).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+
+        }
+
+
 
         // DELETE: api/Jobs/5
         [HttpDelete("{id}")]
