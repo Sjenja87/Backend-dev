@@ -15,7 +15,7 @@ namespace ModelManagement.Models
         [MaxLength(2000)]
         public string? Comments { get; set; }
 
-        public ICollection<Model> Models { get; set; } = new List<Model>();
-        public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+        public ICollection<Model>? Models { get; set; } = new List<Model>();
+        public ICollection<Expense>? Expenses { get; set; } = new List<Expense>();
     }
 }

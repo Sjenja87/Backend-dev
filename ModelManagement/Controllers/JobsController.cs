@@ -85,7 +85,7 @@ namespace ModelManagement.Controllers
             _context.Jobs.Add(job);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetJob", new { id = job.JobId }, job);
+            return CreatedAtAction("GetAllJobs", new { id = job.JobId }, job);
         }
 
         [HttpPut]
@@ -108,7 +108,19 @@ namespace ModelManagement.Controllers
             var existingJob = await _context.Jobs.FindAsync(JobId);
             var existingModel = await _context.Models.FindAsync(ModelId);
 
-            existingJob.Models.Remove(existingModel);
+            List<Model> modelList = await _context.Entry(existingJob)
+                .Collection(j => j.Models)
+                .Query()
+                .ToListAsync();
+
+            foreach (Model m in modelList)
+            {
+                if (m.ModelId == ModelId)
+                {
+                    existingJob.Models.Remove(m);
+                }
+            }
+            
             _context.Entry(existingJob).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 

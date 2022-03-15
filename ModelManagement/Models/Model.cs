@@ -35,7 +35,7 @@ namespace ModelManagement.Models
 
     public class Model : ModelBase
     {
-        public ICollection<Job> Jobs { get; set; } = new List<Job>();
-        public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+        public ICollection<Job>? Jobs { get; set; } = new List<Job>();
+        public ICollection<Expense>? Expenses { get; set; } = new List<Expense>();
     }
 }
