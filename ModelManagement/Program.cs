@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using ModelManagement.Data;
 
@@ -11,8 +12,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ModelDb>(
-    opt => opt.UseInMemoryDatabase("Model Management Database")
+    opt => opt.UseInMemoryDatabase("ModelDB")
     );
+builder.Services.AddControllers().AddJsonOptions(
+    x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 var app = builder.Build();
 

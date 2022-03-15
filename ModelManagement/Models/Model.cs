@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace ModelManagement.Models
 {
@@ -37,7 +35,7 @@ namespace ModelManagement.Models
 
     public class Model : ModelBase
     {
-        public List<Job>? Jobs { get; set; } = new List<Job>();
-        public List<Expense>? Expenses { get; set; } = new List<Expense>();
+        public ICollection<Job> Jobs { get; set; } = new List<Job>();
+        public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
     }
 }
