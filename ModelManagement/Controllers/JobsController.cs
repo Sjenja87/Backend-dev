@@ -129,7 +129,7 @@ namespace ModelManagement.Controllers
             return CreatedAtAction("GetAllJobs", new { id = job.JobId }, job);
         }
 
-        [HttpPut("addModel_{JobId},{ModelId}")]
+        [HttpPut("{JobId},{ModelId}")]
         public async Task<ActionResult<Job>> AddModelToJob(long JobId, long ModelId)
         {
             var existingJob = await _context.Jobs.FindAsync(JobId);
@@ -150,7 +150,7 @@ namespace ModelManagement.Controllers
             return Ok(existingJob);
         }
 
-        [HttpPut("removeModel_{JobId},{ModelId}")]
+        [HttpDelete("{JobId},{ModelId}")]
         public async Task<ActionResult<Job>> DeleteModelFromJob(long JobId, long ModelId)
         {
             var existingJob = await _context.Jobs.FindAsync(JobId);
