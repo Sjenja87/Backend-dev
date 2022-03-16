@@ -79,7 +79,7 @@ namespace ModelManagement.Controllers
 
         // POST: api/Jobs
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        [HttpPost("{job}")]
         public async Task<ActionResult<Job>> PostJob(Job job)
         {
             _context.Jobs.Add(job);
@@ -109,11 +109,16 @@ namespace ModelManagement.Controllers
             return Ok(existingJob);
         }
 
-        [HttpPut("RemoveModel")]
+        [HttpPut("{JobId},{ModelId}")]
         public async Task<ActionResult<Job>> DeleteModelFromJob(long JobId, long ModelId)
         {
             var existingJob = await _context.Jobs.FindAsync(JobId);
             var existingModel = await _context.Models.FindAsync(ModelId);
+
+            if (existingJob == null || existingModel == null)
+            {
+                return NotFound();
+            }
 
             List<Model> modelList = await _context.Entry(existingJob)
                 .Collection(j => j.Models)
