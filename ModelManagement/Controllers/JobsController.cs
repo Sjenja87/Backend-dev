@@ -94,23 +94,15 @@ namespace ModelManagement.Controllers
             var existingJob = await _context.Jobs.FindAsync(JobId);
             var existingModel = await _context.Models.FindAsync(ModelId);
 
-            try
+
+            if (existingJob == null || existingModel == null)
             {
-                existingJob.Models.Add(existingModel);
-                _context.Entry(existingJob).State = EntityState.Modified;
+                return NotFound();
             }
-            catch(DbUpdateConcurrencyException)
-            {
-                if(existingJob != null && existingModel != null)
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-               
-            }
+
+            existingJob.Models.Add(existingModel);
+            _context.Entry(existingJob).State = EntityState.Modified;
+           
             
             await _context.SaveChangesAsync();
 
