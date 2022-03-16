@@ -26,9 +26,30 @@ namespace ModelManagement.Controllers
 
         // GET: api/Jobs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Job>>> GetAllJobs()
+        public async Task<ActionResult<IEnumerable<PresentJob>>> GetAllJobs()
         {
-            return await _context.Jobs.ToListAsync();
+            List<Job> jobList = await _context.Jobs.ToListAsync();
+
+            List<PresentJob> returnList = new List<PresentJob>();
+
+            foreach(Job job in jobList)
+            {
+                List<Model> models = await _context.Entry(job)
+                    .Collection(j => j.Models)
+                    .Query()
+                    .ToListAsync();
+
+                PresentJob returnJob = new PresentJob();
+
+                foreach(Model m in models)
+                {
+                    returnJob.modelNames.Add(m.FirstName + " " + m.LastName);
+                }
+                returnList.Add(returnJob);
+            }
+            
+
+            return returnList;
         }
 
         // GET: api/Jobs/5
@@ -79,7 +100,7 @@ namespace ModelManagement.Controllers
 
         // POST: api/Jobs
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost("{job}")]
+        [HttpPost]
         public async Task<ActionResult<Job>> PostJob(Job job)
         {
             _context.Jobs.Add(job);
@@ -88,7 +109,7 @@ namespace ModelManagement.Controllers
             return CreatedAtAction("GetAllJobs", new { id = job.JobId }, job);
         }
 
-        [HttpPut("{JobId},{ModelId}")]
+        [HttpPut("addModel_{JobId},{ModelId}")]
         public async Task<ActionResult<Job>> AddModelToJob(long JobId, long ModelId)
         {
             var existingJob = await _context.Jobs.FindAsync(JobId);
@@ -109,7 +130,7 @@ namespace ModelManagement.Controllers
             return Ok(existingJob);
         }
 
-        [HttpPut("{JobId},{ModelId}")]
+        [HttpPut("removeModel_{JobId},{ModelId}")]
         public async Task<ActionResult<Job>> DeleteModelFromJob(long JobId, long ModelId)
         {
             var existingJob = await _context.Jobs.FindAsync(JobId);

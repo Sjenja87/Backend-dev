@@ -39,3 +39,4 @@ namespace ModelManagement.Models
         public ICollection<Expense>? Expenses { get; set; } = new List<Expense>();
     }
 }
+
