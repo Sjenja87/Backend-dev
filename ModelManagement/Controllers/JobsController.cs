@@ -88,15 +88,30 @@ namespace ModelManagement.Controllers
             return CreatedAtAction("GetAllJobs", new { id = job.JobId }, job);
         }
 
-        [HttpPut]
+        [HttpPut("{JobId},{ModelId}")]
         public async Task<ActionResult<Job>> AddModelToJob(long JobId, long ModelId)
         {
             var existingJob = await _context.Jobs.FindAsync(JobId);
             var existingModel = await _context.Models.FindAsync(ModelId);
 
-            existingJob.Models.Add(existingModel);
-            _context.Entry(existingJob).State = EntityState.Modified;
-
+            try
+            {
+                existingJob.Models.Add(existingModel);
+                _context.Entry(existingJob).State = EntityState.Modified;
+            }
+            catch(DbUpdateConcurrencyException)
+            {
+                if(existingJob != null && existingModel != null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+               
+            }
+            
             await _context.SaveChangesAsync();
 
             return Ok(existingJob);
@@ -147,5 +162,6 @@ namespace ModelManagement.Controllers
         {
             return _context.Jobs.Any(e => e.JobId == id);
         }
+        
     }
 }
