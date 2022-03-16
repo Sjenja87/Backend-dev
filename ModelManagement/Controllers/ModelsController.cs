@@ -40,10 +40,28 @@ namespace ModelManagement.Controllers
         public async Task<ActionResult<Model>> GetModel(long id)
         {
             var model = await _context.Models.FindAsync(id);
-
+            
             if (model == null)
             {
                 return NotFound();
+            }
+            
+            List<Job> jobs = await _context.Entry(model)
+                        .Collection(j => j.Jobs)
+                        .Query()
+                        .ToListAsync();
+            List<Expense> expenses = await _context.Entry(model)
+                        .Collection(j => j.Expenses)
+                        .Query()
+                        .ToListAsync();
+
+            foreach (Job jb in jobs)
+            {
+                model.Jobs.Add(jb);
+            }
+            foreach(Expense expense in expenses)
+            {
+                model.Expenses.Add(expense);
             }
 
             return model;
