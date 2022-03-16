@@ -39,36 +39,12 @@ namespace ModelManagement.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ModelWithBase>> GetModel(long id)
         {
-            Model model = await _context.Models.Include(j => j.Jobs).Include(j=>j.Expenses).FirstOrDefaultAsync(m => m.ModelId==id);
+            Model model = await _context.Models.Include(j => j.Jobs).Include(j=>j.Expenses).FirstAsync(m => m.ModelId==id);
 
             if (model == null)
             {
                 return NotFound();
             }
-
-            
-            //List<Job> jobs = await _context.Entry(model)
-            //            .Collection(j => j.Jobs)
-            //            .Query()
-            //            .ToListAsync();
-
-            //List<Expense> expenses = await _context.Entry(model)
-            //            .Collection(j => j.Expenses)
-            //            .Query()
-            //            .ToListAsync();
-
-            
-
-            //foreach (Job jb in jobs)
-            //{
-            //    model.Jobs.Add(jb);
-            //}
-            //foreach(Expense expense in expenses)
-            //{
-            //    model.Expenses.Add(expense);
-            //}
-
-            
 
             return new ModelWithBase(model) ;
         }

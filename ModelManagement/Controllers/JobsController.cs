@@ -57,38 +57,23 @@ namespace ModelManagement.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Job>> GetJobWithExpenses(long id)
         {
-            var job = await _context.Jobs.FindAsync(id);
-            List<Expense> expenses = await _context.Entry(job)
-                        .Collection(j => j.Expenses)
-                        .Query()
-                        .ToListAsync();
-
-            //foreach (Expense ex in expenses)
-            //{
-            //    job.Expenses.Add(ex);
-            //}
+            Job job = await _context.Jobs.Include(j => j.Expenses).FirstAsync(m => m.JobId == id);
 
             return job;
         }
 
         // GET: api/Jobs/5
-        [HttpGet("forModel{id}")]
-        public async Task<ActionResult<List<JobBase>>> GetJobForModel(long id)
+        [HttpGet("Model{id}")]
+        public async Task<ActionResult<Model>> GetJobForModel(long id)
         {
-            var model = await _context.Models.FindAsync(id);
-            List<Job> jobList =  await _context.Entry(model)
-                        .Collection(j => j.Jobs)
-                        .Query()
-                        .ToListAsync();
+            Model model = await _context.Models.Include(j => j.Jobs).FirstAsync(m => m.ModelId == id);
 
-            List<JobBase> returnList = new List<JobBase>();
-
-            foreach(Job job in jobList)
+            if (model == null)
             {
-                returnList.Add(new JobBase(job));
+                return NotFound();
             }
 
-            return returnList;
+            return model;
         }
 
         // PUT: api/Jobs/5

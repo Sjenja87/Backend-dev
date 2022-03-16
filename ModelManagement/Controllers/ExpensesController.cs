@@ -47,12 +47,5 @@ namespace ModelManagement.Controllers
 
             return _context.Expenses.LastOrDefault();
         }
-
-
-
-        private bool ExpenseExists(long id)
-        {
-            return _context.Expenses.Any(e => e.ExpenseId == id);
-        }
     }
 }
