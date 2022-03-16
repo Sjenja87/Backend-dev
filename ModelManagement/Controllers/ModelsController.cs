@@ -37,34 +37,40 @@ namespace ModelManagement.Controllers
 
         // GET: api/Models/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Model>> GetModel(long id)
+        public async Task<ActionResult<ModelWithBase>> GetModel(long id)
         {
-            var model = await _context.Models.FindAsync(id);
-            
+            Model model = await _context.Models.Include(j => j.Jobs).Include(j=>j.Expenses).FirstOrDefaultAsync(m => m.ModelId==id);
+
             if (model == null)
             {
                 return NotFound();
             }
+
             
-            List<Job> jobs = await _context.Entry(model)
-                        .Collection(j => j.Jobs)
-                        .Query()
-                        .ToListAsync();
-            List<Expense> expenses = await _context.Entry(model)
-                        .Collection(j => j.Expenses)
-                        .Query()
-                        .ToListAsync();
+            //List<Job> jobs = await _context.Entry(model)
+            //            .Collection(j => j.Jobs)
+            //            .Query()
+            //            .ToListAsync();
 
-            foreach (Job jb in jobs)
-            {
-                model.Jobs.Add(jb);
-            }
-            foreach(Expense expense in expenses)
-            {
-                model.Expenses.Add(expense);
-            }
+            //List<Expense> expenses = await _context.Entry(model)
+            //            .Collection(j => j.Expenses)
+            //            .Query()
+            //            .ToListAsync();
 
-            return model;
+            
+
+            //foreach (Job jb in jobs)
+            //{
+            //    model.Jobs.Add(jb);
+            //}
+            //foreach(Expense expense in expenses)
+            //{
+            //    model.Expenses.Add(expense);
+            //}
+
+            
+
+            return new ModelWithBase(model) ;
         }
 
         // PUT: api/Models/5

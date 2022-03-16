@@ -30,6 +30,7 @@ namespace ModelManagement.Controllers
         {
             List<Job> jobList = await _context.Jobs.ToListAsync();
 
+            
             List<ModelNameJob> returnList = new List<ModelNameJob>();
 
             foreach(Job job in jobList)
@@ -39,7 +40,7 @@ namespace ModelManagement.Controllers
                     .Query()
                     .ToListAsync();
 
-                ModelNameJob returnJob = new ModelNameJob();
+                ModelNameJob returnJob = new ModelNameJob(job);
 
                 foreach(Model m in models)
                 {
@@ -62,29 +63,29 @@ namespace ModelManagement.Controllers
                         .Query()
                         .ToListAsync();
 
-            foreach (Expense ex in expenses)
-            {
-                job.Expenses.Add(ex);
-            }
+            //foreach (Expense ex in expenses)
+            //{
+            //    job.Expenses.Add(ex);
+            //}
 
             return job;
         }
 
         // GET: api/Jobs/5
         [HttpGet("forModel{id}")]
-        public async Task<ActionResult<List<NoListJob>>> GetJobForModel(long id)
+        public async Task<ActionResult<List<JobBase>>> GetJobForModel(long id)
         {
             var model = await _context.Models.FindAsync(id);
-            List<Job> jobList = await _context.Entry(model)
+            List<Job> jobList =  await _context.Entry(model)
                         .Collection(j => j.Jobs)
                         .Query()
                         .ToListAsync();
 
-            List<NoListJob> returnList = new List<NoListJob>();
+            List<JobBase> returnList = new List<JobBase>();
 
             foreach(Job job in jobList)
             {
-                returnList.Add(new NoListJob(job));
+                returnList.Add(new JobBase(job));
             }
 
             return returnList;
