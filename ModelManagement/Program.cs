@@ -1,11 +1,22 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using ModelManagement.Data;
+using ModelManagement.Hubs;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddSignalR();
+builder.Services.AddCors(
+    options => {
+        options.AddDefaultPolicy(builder =>
+        {
+            builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+        });
+    });
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -28,12 +39,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+app.UseStaticFiles();
+
+app.UseCors();
 
 app.MapControllers();
 
-
-
-app.UseCors();
+app.MapHub<ExpenseMessageHub>("/expenseList");
 
 app.Run();

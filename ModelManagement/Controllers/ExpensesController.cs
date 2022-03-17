@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ModelManagement.Data;
 using ModelManagement.Models;
+using ModelManagement.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ModelManagement.Controllers
 {
@@ -16,10 +18,12 @@ namespace ModelManagement.Controllers
     public class ExpensesController : ControllerBase
     {
         private readonly ModelDb _context;
+        private readonly IHubContext<ExpenseMessageHub> _messageHub;
 
-        public ExpensesController(ModelDb context)
+        public ExpensesController(ModelDb context, IHubContext<ExpenseMessageHub> messageHub)
         {
             _context = context;
+            _messageHub = messageHub;
         }
 
 
@@ -44,8 +48,12 @@ namespace ModelManagement.Controllers
             _context.Expenses.Add(expense);
             await _context.SaveChangesAsync();
 
+            Expense lastSaveExpense = _context.Expenses.LastOrDefault();
 
-            return _context.Expenses.LastOrDefault();
+            await _messageHub.Clients.All.SendAsync("NewExpense", lastSaveExpense.ExpenseId , "2012313");
+
+
+            return lastSaveExpense;
         }
     }
 }
