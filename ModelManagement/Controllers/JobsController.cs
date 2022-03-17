@@ -1,12 +1,5 @@
 ﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization.Metadata;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using ModelManagement.Data;
 using ModelManagement.Models;
@@ -19,6 +12,8 @@ namespace ModelManagement.Controllers
     {
         private readonly ModelDb _context;
 
+        #region Controller Methods
+        
         public JobsController(ModelDb context)
         {
             _context = context;
@@ -50,7 +45,6 @@ namespace ModelManagement.Controllers
         }
 
         // PUT: api/Jobs/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutJob(long id, [Bind("StartDate", "Days", "Location", "Comments")] Job job)
         {
@@ -78,7 +72,6 @@ namespace ModelManagement.Controllers
         }
 
         // POST: api/Jobs
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Job>> PostJob(Job job)
         {
@@ -89,42 +82,31 @@ namespace ModelManagement.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<Job>> AddModelToJob(long JobId, long ModelId)
+        public async Task<ActionResult<Job>> AddModelToJob(long jobId, long modelId)
         {
-            var existingJob = await _context.Jobs.FindAsync(JobId);
-            var existingModel = await _context.Models.FindAsync(ModelId);
+          JobConnector jobConnector = new JobConnector(_context);
 
-            existingJob.Models.Add(existingModel);
-            _context.Entry(existingJob).State = EntityState.Modified;
+          if (JobExists(jobId) && ModelExists(modelId))
+          {
+            jobConnector.AddElementToNavigator(jobId, modelId);
+            return NoContent();
+          }
 
-            await _context.SaveChangesAsync();
-
-            return Ok(existingJob);
+          return BadRequest();
         }
 
         [HttpPut("RemoveModel")]
-        public async Task<ActionResult<Job>> DeleteModelFromJob(long JobId, long ModelId)
+        public async Task<ActionResult<Job>> DeleteModelWithIdFromJobWithId(long jobId, long modelId)
         {
-            var existingJob = await _context.Jobs.FindAsync(JobId);
-            var existingModel = await _context.Models.FindAsync(ModelId);
-
-            List<Model> modelList = await _context.Entry(existingJob)
-                .Collection(j => j.Models)
-                .Query()
-                .ToListAsync();
-
-            foreach (Model m in modelList)
-            {
-                if (m.ModelId == ModelId)
-                {
-                    existingJob.Models.Remove(m);
-                }
-            }
-            
-            _context.Entry(existingJob).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-
+          JobConnector jobConnector = new JobConnector(_context);
+          
+          if (JobExists(jobId) && ModelExists(modelId))
+          {
+            jobConnector.RemoveElementFromNavigator(jobId, modelId);
             return NoContent();
+          }
+          
+          return BadRequest();
         }
 
         // DELETE: api/Jobs/5
@@ -143,9 +125,16 @@ namespace ModelManagement.Controllers
             return NoContent();
         }
 
+        #endregion
+
+        #region Helper Methods
+
         private bool JobExists(long id)
-        {
-            return _context.Jobs.Any(e => e.JobId == id);
-        }
+          => _context.Jobs.Any(e => e.JobId == id);
+
+        private bool ModelExists(long id) 
+          => _context.Models.Any(e => e.ModelId == id);
+
+        #endregion
     }
 }
