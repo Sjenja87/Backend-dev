@@ -21,27 +21,54 @@ namespace ModelManagement.Controllers
 
         // GET: api/Jobs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Job>>> GetAllJobs()
+        public async Task<ActionResult<IEnumerable<ModelNameJob>>> GetAllJobs()
         {
-            return await _context.Jobs.ToListAsync();
+            List<Job> jobList = await _context.Jobs.ToListAsync();
+
+            
+            List<ModelNameJob> returnList = new List<ModelNameJob>();
+
+            foreach(Job job in jobList)
+            {
+                List<Model> models = await _context.Entry(job)
+                    .Collection(j => j.Models)
+                    .Query()
+                    .ToListAsync();
+
+                ModelNameJob returnJob = new ModelNameJob(job);
+
+                foreach(Model m in models)
+                {
+                    returnJob.modelNames.Add(m.FirstName + " " + m.LastName);
+                }
+                returnList.Add(returnJob);
+            }
+            
+
+            return returnList;
         }
 
         // GET: api/Jobs/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Job>> GetJobWithExpenses(long id)
         {
-            var job = await _context.Jobs.FindAsync(id);
-            List<Expense> expenses = await _context.Entry(job)
-                        .Collection(j => j.Expenses)
-                        .Query()
-                        .ToListAsync();
-
-            foreach (Expense ex in expenses)
-            {
-                job.Expenses.Add(ex);
-            }
+            Job job = await _context.Jobs.Include(j => j.Expenses).FirstAsync(m => m.JobId == id);
 
             return job;
+        }
+
+        // GET: api/Jobs/5
+        [HttpGet("Model{id}")]
+        public async Task<ActionResult<Model>> GetJobForModel(long id)
+        {
+            Model model = await _context.Models.Include(j => j.Jobs).FirstAsync(m => m.ModelId == id);
+
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            return model;
         }
 
         // PUT: api/Jobs/5
@@ -81,7 +108,7 @@ namespace ModelManagement.Controllers
             return CreatedAtAction("GetAllJobs", new { id = job.JobId }, job);
         }
 
-        [HttpPut]
+        [HttpPut("{JobId},{ModelId}")]
         public async Task<ActionResult<Job>> AddModelToJob(long jobId, long modelId)
         {
           JobConnector jobConnector = new JobConnector(_context);
@@ -95,7 +122,7 @@ namespace ModelManagement.Controllers
           return BadRequest();
         }
 
-        [HttpPut("RemoveModel")]
+        [HttpDelete("{JobId},{ModelId}")]
         public async Task<ActionResult<Job>> DeleteModelWithIdFromJobWithId(long jobId, long modelId)
         {
           JobConnector jobConnector = new JobConnector(_context);

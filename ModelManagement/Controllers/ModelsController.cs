@@ -37,16 +37,16 @@ namespace ModelManagement.Controllers
 
         // GET: api/Models/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Model>> GetModel(long id)
+        public async Task<ActionResult<ModelWithBase>> GetModel(long id)
         {
-            var model = await _context.Models.FindAsync(id);
+            Model model = await _context.Models.Include(j => j.Jobs).Include(j=>j.Expenses).FirstAsync(m => m.ModelId==id);
 
             if (model == null)
             {
                 return NotFound();
             }
 
-            return model;
+            return new ModelWithBase(model) ;
         }
 
         // PUT: api/Models/5
