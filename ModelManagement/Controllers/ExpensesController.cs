@@ -50,8 +50,7 @@ namespace ModelManagement.Controllers
 
             Expense lastSaveExpense = _context.Expenses.LastOrDefault();
 
-            await _messageHub.Clients.All.SendAsync("NewExpense", lastSaveExpense.ExpenseId , "2012313");
-
+            await _messageHub.Clients.All.SendAsync("NewExpense", lastSaveExpense.ExpenseId, DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss"));
 
             return lastSaveExpense;
         }
